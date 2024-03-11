@@ -1,0 +1,14 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/tp-bddd?replicaSet=tpReplicaSet
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+
+server:
+  port: 8080
+logging:
+  level:
+    web: debug

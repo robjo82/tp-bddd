@@ -1,0 +1,55 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+
+  mongo1:
+    image: mongo:4.4
+    command: mongod --replSet tpReplicaSet --bind_ip_all
+    volumes:
+      - mongo1-data:/data/db
+
+  mongo2:
+    image: mongo:4.4
+    command: mongod --replSet tpReplicaSet --bind_ip_all
+    volumes:
+      - mongo2-data:/data/db
+
+  mongo3:
+    image: mongo:4.4
+    command: mongod --replSet tpReplicaSet --bind_ip_all
+    volumes:
+      - mongo3-data:/data/db
+
+  init-replica:
+    image: mongo:4.4
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    command: >
+      bash -c "
+        echo 'Waiting for MongoDB nodes to start...' &&
+        sleep 10 &&
+        mongo --host mongo1 --eval '
+          rs.initiate({
+            _id: \"tpReplicaSet\",
+            members: [
+              { _id: 0, host: \"mongo1:27017\" },
+              { _id: 1, host: \"mongo2:27017\" },
+              { _id: 2, host: \"mongo3:27017\" }
+            ]
+          });
+        '
+      "
+
+volumes:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
